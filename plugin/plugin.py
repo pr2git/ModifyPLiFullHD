@@ -5,7 +5,7 @@ from . import _
 #    Plugin for Enigma2
 #    version:
 #
-#    Coded by ims (c)2015-2024
+#    Coded by ims (c)2015-2026
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of the GNU General Public License

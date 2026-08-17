@@ -5,8 +5,8 @@ from . import _
 #
 #    Plugin for Enigma2
 #    version:
-VERSION = "1.49"
-#    Coded by ims (c)2015-2024
+VERSION = "1.50"
+#    Coded by ims (c)2015-2026
 #
 #    This program is free software; you can redistribute it and/or
 #    modify it under the terms of the GNU General Public License
@@ -22,7 +22,7 @@ VERSION = "1.49"
 
 from Screens.Screen import Screen
 from Components.ConfigList import ConfigListScreen
-from Components.config import getConfigListEntry, ConfigIP, NoSave, ConfigSubsection, config, ConfigSelection, ConfigYesNo
+from Components.config import ConfigIP, NoSave, ConfigSubsection, config, ConfigSelection, ConfigYesNo
 from Components.ActionMap import ActionMap
 from Components.Label import Label
 from Screens.Standby import TryQuitMainloop
@@ -68,6 +68,9 @@ OPERA_INI_PATH = "/usr/local/OpenOpera/home/opera.ini"
 
 reload_skin_on_start = True
 
+def colorText(color, text):
+    color = int(skin.parseColor(color).argb())
+    return "\\c%08x%s\\C" % (color, text)
 
 class ModifyPLiFullHD(Screen, ConfigListScreen):
 	skin = """
@@ -118,8 +121,9 @@ class ModifyPLiFullHD(Screen, ConfigListScreen):
 		self.current_skin = config.skin.primary_skin.value.split('/')[0]
 		cfg.skin.value = self.current_skin
 
-		if self.get_opera_scale():
-			cfg.oopera_scale.value = self.get_opera_scale()
+		operaScale = self.get_opera_scale()
+		if operaScale:
+			cfg.oopera_scale.value = operaScale
 
 		self.onShown.append(self.testSkin)
 
@@ -167,43 +171,31 @@ class ModifyPLiFullHD(Screen, ConfigListScreen):
 
 	def loadConfig(self):
 		self.list = []
-		self.list.append(getConfigListEntry(self.skin_enabled, cfg.enabled))
+		self.list.append((self.skin_enabled, cfg.enabled))
 		if cfg.enabled.value:
-			e = "\c%08x" % int(skin.parseColor("foreground").argb())
-			self.list.append(getConfigListEntry(self.skin_name, cfg.skin))
-			self.list.append(getConfigListEntry(_("Regular font"), cfg.font))
-			self.list.append(getConfigListEntry(_("Top color  (a,r,g,b)"), cfg.toptemplatecolor))
-			self.list.append(getConfigListEntry(_("Selector color  (a,r,g,b)"), cfg.selectorcolor))
-			self.list.append(getConfigListEntry(_("Bottom color  (a,r,g,b)"), cfg.basictemplatecolor))
-			self.list.append(getConfigListEntry(_("Vertical selector's lines"), cfg.selector_vertical))
-			b = "\c%08x" % int(skin.parseColor("selectedFG").argb())
-			self.list.append(getConfigListEntry(b + _("SelectedFG color  (a,r,g,b)") + e, cfg.selectedfgcolor))
-			b = "\c%08x" % int(skin.parseColor("selectedFGEvent").argb())
-			self.list.append(getConfigListEntry(b + _("SelectedFGEvent color  (a,r,g,b)") + e, cfg.selectedfgeventcolor))
-			b = "\c%08x" % int(skin.parseColor("secondFG").argb())
-			self.list.append(getConfigListEntry(b + _("SecondFG color  (a,r,g,b)") + e, cfg.secondfgcolor))
-			b = "\c%08x" % int(skin.parseColor("yellow").argb())
-			self.list.append(getConfigListEntry(b + _("Yellow color  (a,r,g,b)") + e, cfg.yellowcolor))
-			b = "\c%08x" % int(skin.parseColor("yellowsoft").argb())
-			self.list.append(getConfigListEntry(b + _("Yellowsoft color  (a,r,g,b)") + e, cfg.yellowsoftcolor))
-			b = "\c%08x" % int(skin.parseColor("transponderinfo").argb())
-			self.list.append(getConfigListEntry(b + _("TransponderInfo color  (a,r,g,b)") + e, cfg.transponderinfocolor))
-			b = "\c%08x" % int(skin.parseColor("red").argb())
-			self.list.append(getConfigListEntry(b + _("Red color  (a,r,g,b)") + e, cfg.redcolor))
-			b = "\c%08x" % int(skin.parseColor("grey").argb())
-			self.list.append(getConfigListEntry(b + _("Grey color  (a,r,g,b)") + e, cfg.greycolor))
-			b = "\c%08x" % int(skin.parseColor("darkgrey").argb())
-			self.list.append(getConfigListEntry(b + _("Darkgrey color  (a,r,g,b)") + e, cfg.darkgreycolor))
-			b = "\c%08x" % int(skin.parseColor("fallback").argb())
-			self.list.append(getConfigListEntry(b + _("Fallback color  (a,r,g,b)") + e, cfg.fallbackcolor))
-			b = "\c%08x" % int(skin.parseColor("notavailable").argb())
-			self.list.append(getConfigListEntry(b + _("Notavailable color  (a,r,g,b)") + e, cfg.notavailablecolor))
-			self.list.append(getConfigListEntry(_("Background color  (a,r,g,b)"), cfg.backgroundcolor))
-			self.list.append(getConfigListEntry(_("Black color  (a,r,g,b)"), cfg.blackcolor))
+			self.list.append((self.skin_name, cfg.skin))
+			self.list.append((_("Regular font"), cfg.font))
+			self.list.append((_("Top color  (a,r,g,b)"), cfg.toptemplatecolor))
+			self.list.append((_("Selector color  (a,r,g,b)"), cfg.selectorcolor))
+			self.list.append((_("Bottom color  (a,r,g,b)"), cfg.basictemplatecolor))
+			self.list.append((_("Vertical selector's lines"), cfg.selector_vertical))
+			self.list.append((colorText("selectedFG", _("SelectedFG color  (a,r,g,b)")), cfg.selectedfgcolor))
+			self.list.append((colorText("selectedFGEvent", _("SelectedFGEvent color  (a,r,g,b)")), cfg.selectedfgeventcolor))
+			self.list.append((colorText("secondFG", _("SecondFG color  (a,r,g,b)")), cfg.secondfgcolor))
+			self.list.append((colorText("yellow", _("Yellow color  (a,r,g,b)")), cfg.yellowcolor))
+			self.list.append((colorText("yellowsoft", _("Yellowsoft color  (a,r,g,b)")), cfg.yellowsoftcolor))
+			self.list.append((colorText("transponderinfo", _("TransponderInfo color  (a,r,g,b)")), cfg.transponderinfocolor))
+			self.list.append((colorText("red", _("Red color  (a,r,g,b)")), cfg.redcolor))
+			self.list.append((colorText("grey", _("Grey color  (a,r,g,b)")), cfg.greycolor))
+			self.list.append((colorText("darkgrey", _("Darkgrey color  (a,r,g,b)")), cfg.darkgreycolor))
+			self.list.append((colorText("fallback", _("Fallback color  (a,r,g,b)")), cfg.fallbackcolor))
+			self.list.append((colorText("notavailable", _("Notavailable color  (a,r,g,b)")), cfg.notavailablecolor))
+			self.list.append((_("Background color  (a,r,g,b)"), cfg.backgroundcolor))
+			self.list.append((_("Black color  (a,r,g,b)"), cfg.blackcolor))
 			if cfg.skin.value in ("PLi-FullHD", "PLi-FullNightHD"):
-				self.list.append(getConfigListEntry(_("Alternative windows border"), cfg.altwin))
+				self.list.append((_("Alternative windows border"), cfg.altwin))
 			if self.get_opera_scale():
-				self.list.append(getConfigListEntry(_("OpenOpera scale for skin"), cfg.oopera_scale))
+				self.list.append((_("OpenOpera scale for skin"), cfg.oopera_scale))
 
 		self["config"].list = self.list
 		if self.menuSelectedIndex:
@@ -239,98 +231,8 @@ class ModifyPLiFullHD(Screen, ConfigListScreen):
 			return True
 
 	def saveParametersToFile(self):
-		def addMark(value):
-			return ''.join(("#", value))
-
-		toptemplate, basictemplate, selector, transponderinfo, selectedfg, selectedfgevent, yellow, yellowsoft, red, grey, darkgrey, secondfg, fallback, notavailable, background, black = self.getColorsFromCfg()
-		self.writeToFile(addMark(toptemplate), addMark(basictemplate), addMark(selector), addMark(transponderinfo), addMark(selectedfg), addMark(selectedfgevent), addMark(yellow), addMark(yellowsoft), addMark(red), addMark(grey), addMark(darkgrey), addMark(secondfg), addMark(fallback), addMark(notavailable), addMark(background), addMark(black))
-
-	def saveParametersToFileOLDUnused(self):
-		toptemplate, basictemplate, selector, transponderinfo, selectedfg, selectedfgevent, yellow, yellowsoft, red, grey, darkgrey, secondfg, fallback, notavailable, background, black = self.getColorsFromCfg()
-
-		def addMark(value):
-			return ''.join(("#", value))
-
-		tree = ET.ElementTree()
-		tree.parse(XML_FILE)
-		colors = tree.find('colors')
-		for color in colors:
-			name = color.attrib.get('name', None)
-			if name == "toptemplatecolor":
-				color.set('value', addMark(toptemplate))
-			if name == "basictemplatecolor":
-				color.set('value', addMark(basictemplate))
-			if name == "selectorcolor":
-				color.set('value', addMark(selector))
-			if name == "transponderinfo":
-				color.set('value', addMark(transponderinfo))
-			if name == "selectedFG":
-				color.set('value', addMark(selectedfg))
-			if name == "selectedFGEvent":
-				color.set('value', addMark(selectedfgevent))
-			if name == "yellow":
-				color.set('value', addMark(yellow))
-			if name == "yellowsoft":
-				color.set('value', addMark(yellowsoft))
-			if name == "red":
-				color.set('value', addMark(red))
-			if name == "grey":
-				color.set('value', addMark(grey))
-			if name == "darkgrey":
-				color.set('value', addMark(darkgrey))
-			if name == "secondFG":
-				color.set('value', addMark(secondfg))
-			if name == "fallback":
-				color.set('value', addMark(fallback))
-			if name == "notavailable":
-				color.set('value', addMark(notavailable))
-			if name == "background":
-				color.set('value', addMark(background))
-			if name == "black":
-				color.set('value', addMark(black))
-		fonts = tree.find('fonts')
-		for font in fonts:
-			name = font.attrib.get('name', None)
-			if name == "Regular":
-				font.set('filename', cfg.font.value)
-				#print("[ModifyPLiFullHD] set font %s instead of %s" % (cfg.font.value, self.parseFont()))
-
-		alt = plugin_path + "/win2k/"
-
-		windowstyle = tree.find('windowstyle')
-		for borderset in windowstyle.findall("borderset"):
-			for pixmap in borderset.findall("pixmap"):
-				if borderset.attrib.get("name", None) == "bsWindow":
-					if pixmap.attrib.get("pos") == "bpTopLeft":
-						pixmap.set('filename', "%s/top_left_corner.png" % alt if cfg.altwin.value else "window/top_left_corner.png")
-					if pixmap.attrib.get("pos") == "bpTop":
-						pixmap.set('filename', "%s/top_edge.png" % alt if cfg.altwin.value else "window/top_edge.png")
-					if pixmap.attrib.get("pos") == "bpTopRight":
-						pixmap.set('filename', "%s/top_right_corner.png" % alt if cfg.altwin.value else "window/top_right_corner.png")
-					if pixmap.attrib.get("pos") == "bpLeft":
-						pixmap.set('filename', "%s/left_edge.png" % alt if cfg.altwin.value else "window/left_edge.png")
-					if pixmap.attrib.get("pos") == "bpRight":
-						pixmap.set('filename', "%s/right_edge.png" % alt if cfg.altwin.value else "window/right_edge.png")
-					if pixmap.attrib.get("pos") == "bpBottomLeft":
-						pixmap.set('filename', "%s/bottom_left_corner.png" % alt if cfg.altwin.value else "window/bottom_left_corner.png")
-					if pixmap.attrib.get("pos") == "bpBottom":
-						pixmap.set('filename', "%s/bottom_edge.png" % alt if cfg.altwin.value else "window/bottom_edge.png")
-					if pixmap.attrib.get("pos") == "bpBottomRight":
-						pixmap.set('filename', "%s/bottom_right_corner.png" % alt if cfg.altwin.value else "window/bottom_right_corner.png")
-		for borderset in windowstyle.findall("borderset"):
-			for pixmap in borderset.findall("pixmap"):
-				if borderset.attrib.get("name", None) == "bsListboxEntry":
-					if pixmap.attrib.get("pos") == "bpTop":
-						pixmap.set('filename', self.line("line"))
-					if pixmap.attrib.get("pos") == "bpBottom":
-						pixmap.set('filename', self.line("line"))
-					if pixmap.attrib.get("pos") == "bpLeft":
-						pixmap.set('filename', self.line("vline"))
-					if pixmap.attrib.get("pos") == "bpRight":
-						pixmap.set('filename', self.line("vline"))
-
-		fo = open(XML_FILE, "wb")
-		tree.write(fo, encoding='utf-8', xml_declaration=None, default_namespace=None, method="xml")
+		colors = ["#" + value for value in self.getColorsFromCfg()]
+		self.writeToFile(*colors)
 
 	def parseFont(self):
 		root = ET.parse(XML_FILE).getroot()
@@ -346,42 +248,31 @@ class ModifyPLiFullHD(Screen, ConfigListScreen):
 	def parseColors(self):
 		root = ET.parse(XML_FILE).getroot()
 		colors = root.find('colors')
-		for color in colors:
-			name = color.attrib.get('name', None)
-			value = color.attrib.get('value', None).lstrip('#')
 
-			if name == "toptemplatecolor":
-				cfg.toptemplatecolor.value = self.map(value)
-			if name == "basictemplatecolor":
-				cfg.basictemplatecolor.value = self.map(value)
-			if name == "selectorcolor":
-				cfg.selectorcolor.value = self.map(value)
-			if name == "transponderinfo":
-				cfg.transponderinfocolor.value = self.map(value)
-			if name == "selectedFG":
-				cfg.selectedfgcolor.value = self.map(value)
-			if name == "selectedFGEvent":
-				cfg.selectedfgeventcolor.value = self.map(value)
-			if name == "yellow":
-				cfg.yellowcolor.value = self.map(value)
-			if name == "yellowsoft":
-				cfg.yellowsoftcolor.value = self.map(value)
-			if name == "red":
-				cfg.redcolor.value = self.map(value)
-			if name == "grey":
-				cfg.greycolor.value = self.map(value)
-			if name == "darkgrey":
-				cfg.darkgreycolor.value = self.map(value)
-			if name == "secondFG":
-				cfg.secondfgcolor.value = self.map(value)
-			if name == "fallback":
-				cfg.fallbackcolor.value = self.map(value)
-			if name == "notavailable":
-				cfg.notavailablecolor.value = self.map(value)
-			if name == "background":
-				cfg.backgroundcolor.value = self.map(value)
-			if name == "black":
-				cfg.blackcolor.value = self.map(value)
+		colorConfig = {
+			"toptemplatecolor": cfg.toptemplatecolor,
+			"basictemplatecolor": cfg.basictemplatecolor,
+			"selectorcolor": cfg.selectorcolor,
+			"transponderinfo": cfg.transponderinfocolor,
+			"selectedFG": cfg.selectedfgcolor,
+			"selectedFGEvent": cfg.selectedfgeventcolor,
+			"yellow": cfg.yellowcolor,
+			"yellowsoft": cfg.yellowsoftcolor,
+			"red": cfg.redcolor,
+			"grey": cfg.greycolor,
+			"darkgrey": cfg.darkgreycolor,
+			"secondFG": cfg.secondfgcolor,
+			"fallback": cfg.fallbackcolor,
+			"notavailable": cfg.notavailablecolor,
+			"background": cfg.backgroundcolor,
+			"black": cfg.blackcolor,
+		}
+		for color in colors:
+			configItem = colorConfig.get(color.attrib.get("name"))
+			value = color.attrib.get("value")
+
+			if configItem is not None and value:
+				configItem.value = self.map(value.lstrip("#"))
 
 	def map(self, colorstring):
 		return [int(colorstring[0:2], 16), int(colorstring[2:4], 16), int(colorstring[4:6], 16), int(colorstring[6:8], 16)]
@@ -440,8 +331,7 @@ class ModifyPLiFullHD(Screen, ConfigListScreen):
 
 	def cancelCallback(self, answer):
 		if answer:
-			for x in self["config"].list:
-				x[1].cancel
+			cfg.cancel()
 			self.useBackupFile()
 			self.applyChanges(recurse=False)
 
@@ -495,16 +385,15 @@ class ModifyPLiFullHD(Screen, ConfigListScreen):
 
 	def get_opera_scale(self):
 		try:
-			fi = open(OPERA_INI_PATH , "r")
-			for line in fi.readlines():
-				if "Scale" in line:
-					if line[-4:-1] == "100":
+			with open(OPERA_INI_PATH, "r") as fi:
+				for line in fi:
+					if "Scale=100" in line:
 						return "standard"
-					elif line[-4:-1] == "150":
+					elif "Scale=150" in line:
 						return "fullhd"
-			return None
-		except:
-			return None
+		except IOError:
+			pass
+		return None
 
 	def reloadChanellSelection(self):
 		import Screens
@@ -581,7 +470,7 @@ class ModifyPLiFullHD(Screen, ConfigListScreen):
 		try:
 			skin.loadSingleSkinData(enigma.getDesktop(0), root, path)
 			print("[ModifyPLiFullHD] skin reload - old skin code")
-		except:
+		except TypeError:
 			skin.loadSingleSkinData(enigma.getDesktop(0), skin.GUI_SKIN_ID, root, path)
 			print("[ModifyPLiFullHD] skin reload - new skin code")
 		for elem in root:
@@ -787,15 +676,20 @@ class ModifyPLiFullHD(Screen, ConfigListScreen):
 			menu.append((_("Create new \"%s\" file") % "Blue Classic", 10, ""))
 
 		menu.append((_("Font sizes table"), 20, ""))
-		self.session.openWithCallback(self.fileOptionsCallback, ChoiceBox, title=_("Operations with configuration file"), list=menu, selection=self.selectionChoiceBox)
+		selection = menu.index(self.selectionChoiceBox) if self.selectionChoiceBox in menu else 0
+		self.session.openWithCallback(self.fileOptionsCallback, ChoiceBox, title=_("Operations with configuration file"), list=menu, selection=selection)
 
 	def fileOptionsCallback(self, choice):
 		if choice is None:
 			return
+
+		index = self["config"].getCurrentIndex()
+		self.selectionChoiceBox = choice
 		selected = int(choice[1])
+
 		if selected == 100:
 			self.createDefaultCfgFile()
-			self.close((self["config"].getCurrentIndex(), True))
+			self.close((index, True))
 		elif selected == 1:
 			self.saveParametersToFile()
 		elif selected == 2:
@@ -803,30 +697,30 @@ class ModifyPLiFullHD(Screen, ConfigListScreen):
 			self.close()
 		elif selected == 3:
 			self.createDefaultCfgFile("fah")
-			self.close((self["config"].getCurrentIndex(), True))
+			self.close((index, True))
 		elif selected == 4:
 			self.createDefaultCfgFile("purple")
-			self.close((self["config"].getCurrentIndex(), True))
+			self.close((index, True))
 		elif selected == 5:
 			self.createDefaultCfgFile("grey")
-			self.close((self["config"].getCurrentIndex(), True))
+			self.close((index, True))
 		elif selected == 6:
 			self.createDefaultCfgFile("grey2")
-			self.close((self["config"].getCurrentIndex(), True))
+			self.close((index, True))
 		elif selected == 7:
 			self.createDefaultCfgFile("violet")
-			self.close((self["config"].getCurrentIndex(), True))
+			self.close((index, True))
 		elif selected == 10:
 			self.createDefaultCfgFile("blueclass")
-			self.close((self["config"].getCurrentIndex(), True))
+			self.close((index, True))
 		elif selected == 200:
 			self.createDefaultCfgFile("PLi-FullNightHD")
-			self.close((self["config"].getCurrentIndex(), True))
+			self.close((index, True))
 		elif selected == 20:
 			self.session.open(ModifyPLiFullHDFontInfo)
 		else:
 			return
-		self.selectionChoiceBox = selected
+
 
 # not used, may be for future:
 	def colorDict(self):
@@ -834,7 +728,7 @@ class ModifyPLiFullHD(Screen, ConfigListScreen):
 		self.newColors = {}
 		self.newColorsKeys = self.newColors.keys()
 
-		toptemplatecolor, basictemplatecolor, selectorcolor, transponderinfo, selectedFG, selectedFG, yellow, yellowsoft, red, grey, darkgrey, secondFG, fallback, notavailable, background, black = self.getColorsFromCfg()
+		toptemplatecolor, basictemplatecolor, selectorcolor, transponderinfo, selectedFG, selectedFGEvent, yellow, yellowsoft, red, grey, darkgrey, secondFG, fallback, notavailable, background, black = self.getColorsFromCfg()
 		self.newColors = {
 			'toptemplatecolor': toptemplatecolor,
 			'basictemplatecolor': basictemplatecolor,
@@ -892,14 +786,13 @@ class ModifyPLiFullHDFontInfo(Screen, ConfigListScreen):
 		self["tmp"] = Label("")
 		###
 
-		config.plugins.ModifyPLiFullHD = ConfigSubsection()
 		choicelist = self.readFonts()
 		config.plugins.ModifyPLiFullHD.fonts = NoSave(ConfigSelection(default=choicelist[0], choices=choicelist))
 
 		self["info"] = Label(_("Font size / line height (px)"))
 		self["fontsinfo"] = Label()
 
-		self.FontInfoCfg = [getConfigListEntry(_("Select font"), config.plugins.ModifyPLiFullHD.fonts)]
+		self.FontInfoCfg = [(_("Select font"), config.plugins.ModifyPLiFullHD.fonts)]
 
 		ConfigListScreen.__init__(self, self.FontInfoCfg, session=session, on_change=self.displayValues)
 
@@ -931,7 +824,7 @@ class ModifyPLiFullHDFontInfo(Screen, ConfigListScreen):
 
 	def readFonts(self):
 		path = config.skin.primary_skin.value.split('/')[0]
-		if path is ".":
+		if path == ".":
 			skin = resolveFilename(SCOPE_CURRENT_SKIN, "skin_default.xml")
 		else:
 			skin = resolveFilename(SCOPE_CURRENT_SKIN, config.skin.primary_skin.value)
